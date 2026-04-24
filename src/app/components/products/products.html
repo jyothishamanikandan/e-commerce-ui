@@ -1,0 +1,126 @@
+<div class="products-page">
+  <!-- Hero Banner -->
+  <section class="hero-banner">
+    <div class="hero-content">
+      <p class="hero-subtitle">New Collection 2026</p>
+      <h1 class="hero-title">Curated for the<br>Discerning Few</h1>
+      <p class="hero-desc">Timeless pieces crafted with exceptional quality</p>
+      <a routerLink="/products" class="btn-hero">Explore Collection</a>
+    </div>
+  </section>
+
+  <!-- Category Pills -->
+  <section class="categories-strip">
+    <div class="container">
+      <div class="cat-pills">
+        @for (cat of productService.categories(); track cat.id) {
+          <button
+            class="cat-pill"
+            [class.active]="productService.selectedCategory() === cat.id"
+            (click)="selectCategory(cat.id)">
+            <span>{{ cat.icon }}</span>
+            {{ cat.name }}
+          </button>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Toolbar -->
+  <section class="products-toolbar">
+    <div class="container toolbar-inner">
+      <p class="result-count">
+        <strong>{{ productService.filteredProducts().length }}</strong> products found
+      </p>
+      <div class="toolbar-right">
+        <div class="select-wrap">
+          <label>Sort by</label>
+          <select (change)="onSortChange($event)">
+            <option value="featured">Featured</option>
+            <option value="newest">Newest</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="rating">Top Rated</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Products Grid -->
+  <section class="products-section">
+    <div class="container">
+      @if (productService.filteredProducts().length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <h3>No products found</h3>
+          <p>Try adjusting your search or category filter</p>
+          <button class="btn-secondary" (click)="selectCategory('all')">Clear Filters</button>
+        </div>
+      }
+
+      <div class="products-grid">
+        @for (product of productService.filteredProducts(); track product.id) {
+          <div class="product-card">
+            <a [routerLink]="['/products', product.id]" class="card-image-wrap">
+              <img [src]="product.images[0]" [alt]="product.name" loading="lazy" />
+              <div class="card-badges">
+                @if (product.isNew) {
+                  <span class="badge badge-new">New</span>
+                }
+                @if (product.originalPrice) {
+                  <span class="badge badge-sale">-{{ getDiscount(product.price, product.originalPrice!) }}%</span>
+                }
+              </div>
+            </a>
+
+            <div class="card-body">
+              <div class="card-meta">
+                <span class="brand">{{ product.brand }}</span>
+                <span class="category-tag">{{ product.category }}</span>
+              </div>
+
+              <a [routerLink]="['/products', product.id]" class="card-title">{{ product.name }}</a>
+
+              <div class="card-rating">
+                <div class="stars">
+                  @for (star of getStars(product.rating); track $index) {
+                    @if (star === 'full') { <span class="star full">★</span> }
+                    @else if (star === 'half') { <span class="star half">★</span> }
+                    @else { <span class="star empty">★</span> }
+                  }
+                </div>
+                <span class="rating-count">({{ product.reviewCount }})</span>
+              </div>
+
+              <div class="card-pricing">
+                <span class="price">{{ formatPrice(product.price) }}</span>
+                @if (product.originalPrice) {
+                  <span class="original-price">{{ formatPrice(product.originalPrice) }}</span>
+                }
+              </div>
+
+              @if (product.stock <= 5) {
+                <p class="low-stock">Only {{ product.stock }} left!</p>
+              }
+
+              <div class="card-actions">
+                <button
+                  class="btn-add-cart"
+                  [class.added]="addedProductId() === product.id"
+                  (click)="addToCart(product)">
+                  @if (addedProductId() === product.id) {
+                    ✓ Added to Cart
+                  } @else {
+                    Add to Cart
+                  }
+                </button>
+                <a [routerLink]="['/products', product.id]" class="btn-view">View</a>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+</div>

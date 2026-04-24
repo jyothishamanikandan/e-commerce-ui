@@ -1,0 +1,39 @@
+<header class="site-header">
+  <div class="header-top">
+    <span>Free shipping on orders above ₹5,000 &nbsp;|&nbsp; Use code <strong>WELCOME10</strong> for 10% off</span>
+  </div>
+  <div class="header-main">
+    <div class="container header-inner">
+      <button class="hamburger" (click)="toggleMobileMenu()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <a routerLink="/products" class="brand-logo">
+        <span class="brand-icon">◆</span>
+        <span class="brand-name">Maison<span class="brand-accent">Élite</span></span>
+      </a>
+
+      <nav class="main-nav" [class.open]="mobileMenuOpen()">
+        <a routerLink="/products" routerLinkActive="active" (click)="mobileMenuOpen.set(false)">Shop</a>
+        <a routerLink="/orders" routerLinkActive="active" (click)="mobileMenuOpen.set(false)">My Orders</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="search-box">
+          <span class="search-icon">&#128269;</span>
+          <input type="text" placeholder="Search products..." [value]="searchValue()" (input)="onSearch($event)" />
+          @if (searchValue()) {
+            <button class="clear-btn" (click)="clearSearch()">&#x2715;</button>
+          }
+        </div>
+
+        <a routerLink="/cart" class="cart-btn" aria-label="Cart">
+          <span class="cart-icon">&#128722;</span>
+          @if (cart.itemCount() > 0) {
+            <span class="cart-badge">{{ cart.itemCount() }}</span>
+          }
+        </a>
+      </div>
+    </div>
+  </div>
+</header>

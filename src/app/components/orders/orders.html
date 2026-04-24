@@ -1,0 +1,60 @@
+<div class="orders-page">
+  <div class="container">
+    <h1 class="page-title">My Orders</h1>
+
+    @if (orderService.orders().length === 0) {
+      <div class="empty-orders">
+        <div class="empty-icon">📦</div>
+        <h2>No orders yet</h2>
+        <p>Start shopping and your orders will appear here.</p>
+        <a routerLink="/products" class="btn-shop">Shop Now</a>
+      </div>
+    } @else {
+      <div class="orders-list">
+        @for (order of orderService.orders(); track order.id) {
+          <div class="order-card">
+            <div class="order-header">
+              <div class="order-meta">
+                <span class="order-id">{{ order.id }}</span>
+                <span class="order-date">Placed on {{ order.placedAt | date:'dd MMM yyyy, hh:mm a' }}</span>
+              </div>
+              <div class="status-badge" [style.background]="orderService.getStatusColor(order.status) + '1a'" [style.color]="orderService.getStatusColor(order.status)">
+                {{ orderService.getStatusLabel(order.status) }}
+              </div>
+            </div>
+
+            <div class="order-body">
+              <div class="order-images">
+                @for (item of order.items.slice(0, 3); track item.product.id) {
+                  <div class="order-thumb">
+                    <img [src]="item.product.images[0]" [alt]="item.product.name" />
+                  </div>
+                }
+                @if (order.items.length > 3) {
+                  <div class="more-items">+{{ order.items.length - 3 }}</div>
+                }
+              </div>
+
+              <div class="order-info">
+                <p class="order-items-summary">
+                  {{ order.items.length }} item{{ order.items.length !== 1 ? 's' : '' }}:
+                  {{ getItemNames(order) }}
+                </p>
+                <p class="order-delivery">
+                  Estimated delivery: <strong>{{ order.estimatedDelivery | date:'EEE, dd MMM yyyy' }}</strong>
+                </p>
+                <p class="order-payment">{{ order.paymentMethod }}</p>
+              </div>
+
+              <div class="order-total-col">
+                <span class="order-total-label">Total</span>
+                <span class="order-total">{{ formatPrice(order.total) }}</span>
+                <a [routerLink]="['/orders', order.id]" class="btn-track">Track Order →</a>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

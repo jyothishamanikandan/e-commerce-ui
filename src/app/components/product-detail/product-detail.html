@@ -1,0 +1,124 @@
+@if (product()) {
+  <div class="product-detail-page">
+    <div class="container">
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb">
+        <a routerLink="/products">Shop</a>
+        <span>›</span>
+        <span class="bc-category">{{ product()!.category }}</span>
+        <span>›</span>
+        <span class="bc-active">{{ product()!.name }}</span>
+      </nav>
+
+      <!-- Main Content -->
+      <div class="detail-grid">
+        <!-- Image Panel -->
+        <div class="image-panel">
+          <div class="main-image">
+            <img [src]="product()!.images[selectedImage()]" [alt]="product()!.name" />
+            @if (product()!.isNew) {
+              <span class="badge-new">New Arrival</span>
+            }
+          </div>
+        </div>
+
+        <!-- Info Panel -->
+        <div class="info-panel">
+          <div class="brand-line">
+            <span class="brand">{{ product()!.brand }}</span>
+            <span class="category-chip">{{ product()!.category }}</span>
+          </div>
+
+          <h1 class="product-title">{{ product()!.name }}</h1>
+
+          <div class="rating-row">
+            <div class="stars">
+              @for (star of getStars(product()!.rating); track $index) {
+                @if (star === 'full') { <span class="star full">★</span> }
+                @else if (star === 'half') { <span class="star half">★</span> }
+                @else { <span class="star empty">★</span> }
+              }
+            </div>
+            <span class="rating-val">{{ product()!.rating }}</span>
+            <span class="rating-count">{{ product()!.reviewCount }} reviews</span>
+          </div>
+
+          <div class="price-row">
+            <span class="price">{{ formatPrice(product()!.price) }}</span>
+            @if (product()!.originalPrice) {
+              <span class="original">{{ formatPrice(product()!.originalPrice!) }}</span>
+              <span class="discount">{{ getDiscount(product()!.price, product()!.originalPrice!) }}% OFF</span>
+            }
+          </div>
+
+          <p class="description">{{ product()!.description }}</p>
+
+          <div class="divider"></div>
+
+          <!-- Stock -->
+          <div class="stock-row">
+            @if (product()!.stock > 10) {
+              <span class="in-stock">✓ In Stock</span>
+            } @else if (product()!.stock > 0) {
+              <span class="low-stock">⚠ Only {{ product()!.stock }} left</span>
+            } @else {
+              <span class="out-stock">✕ Out of Stock</span>
+            }
+            <span class="free-shipping">🚚 Free delivery above ₹5,000</span>
+          </div>
+
+          <!-- Quantity -->
+          <div class="qty-section">
+            <label class="qty-label">Quantity</label>
+            <div class="qty-control">
+              <button (click)="decreaseQty()" [disabled]="quantity() <= 1">−</button>
+              <span>{{ quantity() }}</span>
+              <button (click)="increaseQty()" [disabled]="quantity() >= product()!.stock">+</button>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="action-btns">
+            <button
+              class="btn-cart"
+              [class.added]="addedToCart()"
+              [disabled]="product()!.stock === 0"
+              (click)="addToCart()">
+              @if (addedToCart()) { ✓ Added to Cart } @else { 🛒 Add to Cart }
+            </button>
+            <button class="btn-buy" [disabled]="product()!.stock === 0" (click)="buyNow()">
+              Buy Now
+            </button>
+          </div>
+
+          <!-- Tags -->
+          <div class="tags-row">
+            @for (tag of product()!.tags; track tag) {
+              <span class="tag"># {{ tag }}</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Related Products -->
+      @if (getRelatedProducts().length > 0) {
+        <section class="related-section">
+          <h2 class="section-title">You May Also Like</h2>
+          <div class="related-grid">
+            @for (related of getRelatedProducts(); track related.id) {
+              <a [routerLink]="['/products', related.id]" class="related-card">
+                <div class="related-img">
+                  <img [src]="related.images[0]" [alt]="related.name" loading="lazy" />
+                </div>
+                <div class="related-info">
+                  <p class="related-name">{{ related.name }}</p>
+                  <p class="related-price">{{ formatPrice(related.price) }}</p>
+                </div>
+              </a>
+            }
+          </div>
+        </section>
+      }
+    </div>
+  </div>
+}

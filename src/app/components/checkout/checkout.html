@@ -1,0 +1,208 @@
+<div class="checkout-page">
+  <div class="container">
+    <div class="page-header">
+      <h1 class="page-title">Checkout</h1>
+    </div>
+
+    @if (cartService.items().length === 0 && !isProcessing()) {
+      <div class="empty-checkout">
+        <p>Your cart is empty. <a routerLink="/products">Go Shopping</a></p>
+      </div>
+    } @else {
+      <!-- Steps -->
+      <div class="steps-bar">
+        <div class="step-item" [class.active]="step() >= 1" [class.done]="step() > 1" (click)="goToStep(1)">
+          <div class="step-num">{{ step() > 1 ? '✓' : '1' }}</div>
+          <span>Shipping</span>
+        </div>
+        <div class="step-line" [class.active]="step() > 1"></div>
+        <div class="step-item" [class.active]="step() >= 2" [class.done]="step() > 2" (click)="goToStep(2)">
+          <div class="step-num">{{ step() > 2 ? '✓' : '2' }}</div>
+          <span>Payment</span>
+        </div>
+        <div class="step-line" [class.active]="step() > 2"></div>
+        <div class="step-item" [class.active]="step() >= 3">
+          <div class="step-num">3</div>
+          <span>Review</span>
+        </div>
+      </div>
+
+      <div class="checkout-layout">
+        <!-- Left: Steps -->
+        <div class="checkout-form">
+
+          <!-- Step 1: Shipping -->
+          @if (step() === 1) {
+            <div class="form-section">
+              <h2 class="section-title">Shipping Address</h2>
+              <div class="form-grid">
+                <div class="form-group span-2">
+                  <label>Full Name *</label>
+                  <input type="text" [(ngModel)]="address.fullName" placeholder="John Doe" />
+                </div>
+                <div class="form-group">
+                  <label>Phone Number *</label>
+                  <input type="tel" [(ngModel)]="address.phone" placeholder="+91 98765 43210" />
+                </div>
+                <div class="form-group span-2">
+                  <label>Address Line 1 *</label>
+                  <input type="text" [(ngModel)]="address.addressLine1" placeholder="House No., Street, Area" />
+                </div>
+                <div class="form-group span-2">
+                  <label>Address Line 2</label>
+                  <input type="text" [(ngModel)]="address.addressLine2" placeholder="Landmark, Apartment (optional)" />
+                </div>
+                <div class="form-group">
+                  <label>City *</label>
+                  <input type="text" [(ngModel)]="address.city" placeholder="Bangalore" />
+                </div>
+                <div class="form-group">
+                  <label>State *</label>
+                  <select [(ngModel)]="address.state">
+                    <option value="">Select State</option>
+                    @for (s of states; track s) {
+                      <option [value]="s">{{ s }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>PIN Code *</label>
+                  <input type="text" [(ngModel)]="address.pincode" placeholder="560001" maxlength="6" />
+                </div>
+              </div>
+              <button class="btn-next" (click)="nextStep()" [disabled]="!isAddressValid()">
+                Continue to Payment →
+              </button>
+            </div>
+          }
+
+          <!-- Step 2: Payment -->
+          @if (step() === 2) {
+            <div class="form-section">
+              <h2 class="section-title">Payment Method</h2>
+              <div class="payment-options">
+                <label class="payment-option" [class.selected]="selectedPayment() === 'card'">
+                  <input type="radio" name="payment" value="card" [(ngModel)]="$any(selectedPayment)" (change)="selectedPayment.set('card')" />
+                  <div class="payment-icon">💳</div>
+                  <div class="payment-info">
+                    <strong>Credit / Debit Card</strong>
+                    <span>Visa, Mastercard, RuPay</span>
+                  </div>
+                </label>
+                <label class="payment-option" [class.selected]="selectedPayment() === 'upi'">
+                  <input type="radio" name="payment" value="upi" [(ngModel)]="$any(selectedPayment)" (change)="selectedPayment.set('upi')" />
+                  <div class="payment-icon">📱</div>
+                  <div class="payment-info">
+                    <strong>UPI Payment</strong>
+                    <span>GPay, PhonePe, Paytm</span>
+                  </div>
+                </label>
+                <label class="payment-option" [class.selected]="selectedPayment() === 'cod'">
+                  <input type="radio" name="payment" value="cod" [(ngModel)]="$any(selectedPayment)" (change)="selectedPayment.set('cod')" />
+                  <div class="payment-icon">💵</div>
+                  <div class="payment-info">
+                    <strong>Cash on Delivery</strong>
+                    <span>Pay when order arrives</span>
+                  </div>
+                </label>
+              </div>
+
+              @if (selectedPayment() === 'card') {
+                <div class="card-form">
+                  <div class="form-group span-2">
+                    <label>Card Number</label>
+                    <input type="text" placeholder="4242 4242 4242 4242" maxlength="19" />
+                  </div>
+                  <div class="form-grid" style="margin-top:0">
+                    <div class="form-group">
+                      <label>Expiry Date</label>
+                      <input type="text" placeholder="MM / YY" maxlength="7" />
+                    </div>
+                    <div class="form-group">
+                      <label>CVV</label>
+                      <input type="text" placeholder="•••" maxlength="4" />
+                    </div>
+                  </div>
+                </div>
+              }
+
+              @if (selectedPayment() === 'upi') {
+                <div class="card-form">
+                  <div class="form-group span-2">
+                    <label>UPI ID</label>
+                    <input type="text" placeholder="yourname@upi" />
+                  </div>
+                </div>
+              }
+
+              <button class="btn-next" (click)="nextStep()">Review Order →</button>
+            </div>
+          }
+
+          <!-- Step 3: Review -->
+          @if (step() === 3) {
+            <div class="form-section">
+              <h2 class="section-title">Review Your Order</h2>
+
+              <div class="review-block">
+                <div class="review-label">Shipping To</div>
+                <div class="review-address">
+                  <strong>{{ address.fullName }}</strong><br>
+                  {{ address.addressLine1 }}
+                  @if (address.addressLine2) { , {{ address.addressLine2 }} }<br>
+                  {{ address.city }}, {{ address.state }} – {{ address.pincode }}<br>
+                  📞 {{ address.phone }}
+                </div>
+              </div>
+
+              <div class="review-block">
+                <div class="review-label">Payment</div>
+                <div class="review-payment">
+                  @if (selectedPayment() === 'card') { 💳 Credit / Debit Card }
+                  @else if (selectedPayment() === 'upi') { 📱 UPI Payment }
+                  @else { 💵 Cash on Delivery }
+                </div>
+              </div>
+
+              <button class="btn-place-order" (click)="placeOrder()" [disabled]="isProcessing()">
+                @if (isProcessing()) {
+                  <span class="spinner"></span> Processing...
+                } @else {
+                  Place Order · {{ formatPrice(cartService.total()) }}
+                }
+              </button>
+            </div>
+          }
+        </div>
+
+        <!-- Right: Order Summary -->
+        <div class="order-summary">
+          <h3 class="summary-title">Order Summary</h3>
+          <div class="summary-items">
+            @for (item of cartService.items(); track item.product.id) {
+              <div class="summary-item">
+                <div class="summary-img">
+                  <img [src]="item.product.images[0]" [alt]="item.product.name" />
+                  <span class="qty-badge">{{ item.quantity }}</span>
+                </div>
+                <div class="summary-item-info">
+                  <p class="summary-item-name">{{ item.product.name }}</p>
+                  <p class="summary-item-price">{{ formatPrice(item.product.price * item.quantity) }}</p>
+                </div>
+              </div>
+            }
+          </div>
+          <div class="summary-totals">
+            <div class="total-row"><span>Subtotal</span><span>{{ formatPrice(cartService.subtotal()) }}</span></div>
+            <div class="total-row"><span>GST (18%)</span><span>{{ formatPrice(cartService.tax()) }}</span></div>
+            <div class="total-row"><span>Shipping</span>
+              <span>{{ cartService.shipping() === 0 ? 'FREE' : formatPrice(cartService.shipping()) }}</span>
+            </div>
+            <div class="divider"></div>
+            <div class="total-row grand"><span>Total</span><span>{{ formatPrice(cartService.total()) }}</span></div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

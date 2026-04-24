@@ -1,0 +1,132 @@
+@if (orderService.selectedOrder()) {
+  <div class="tracking-page">
+    <div class="container">
+      <!-- Back -->
+      <a routerLink="/orders" class="back-link">← Back to Orders</a>
+
+      <!-- Header -->
+      <div class="tracking-header">
+        <div>
+          <h1 class="page-title">Order {{ orderService.selectedOrder()!.id }}</h1>
+          <p class="order-meta">Placed on {{ orderService.selectedOrder()!.placedAt | date:'dd MMMM yyyy, hh:mm a' }}</p>
+        </div>
+        <div class="status-badge"
+          [style.background]="orderService.getStatusColor(orderService.selectedOrder()!.status) + '1a'"
+          [style.color]="orderService.getStatusColor(orderService.selectedOrder()!.status)">
+          {{ orderService.getStatusLabel(orderService.selectedOrder()!.status) }}
+        </div>
+      </div>
+
+      <div class="tracking-layout">
+        <!-- Left Column -->
+        <div class="tracking-main">
+          <!-- Timeline -->
+          <div class="timeline-card">
+            <h2 class="card-title">Order Tracking</h2>
+            <div class="estimated-delivery">
+              <span class="del-label">Estimated Delivery</span>
+              <span class="del-date">{{ orderService.selectedOrder()!.estimatedDelivery | date:'EEEE, dd MMMM yyyy' }}</span>
+            </div>
+
+            <div class="timeline">
+              @for (event of orderService.selectedOrder()!.trackingEvents; track event.status; let i = $index; let last = $last) {
+                <div class="timeline-event" [class.completed]="event.completed" [class.current]="event.completed && (!orderService.selectedOrder()!.trackingEvents[i+1]?.completed)">
+                  <div class="timeline-left">
+                    <div class="event-dot">
+                      @if (event.completed) { <span class="dot-check">✓</span> }
+                      @else { <span class="dot-circle"></span> }
+                    </div>
+                    @if (!last) {
+                      <div class="event-line" [class.filled]="event.completed"></div>
+                    }
+                  </div>
+                  <div class="timeline-content">
+                    <div class="event-header">
+                      <span class="event-icon">{{ event.icon }}</span>
+                      <span class="event-label">{{ event.label }}</span>
+                    </div>
+                    <p class="event-desc">{{ event.description }}</p>
+                    @if (event.timestamp) {
+                      <p class="event-time">{{ event.timestamp | date:'dd MMM yyyy, hh:mm a' }}</p>
+                    } @else {
+                      <p class="event-time pending-time">Pending</p>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Items -->
+          <div class="items-card">
+            <h2 class="card-title">Items Ordered</h2>
+            @for (item of orderService.selectedOrder()!.items; track item.product.id) {
+              <div class="order-item">
+                <div class="item-img">
+                  <img [src]="item.product.images[0]" [alt]="item.product.name" />
+                </div>
+                <div class="item-info">
+                  <div class="item-brand">{{ item.product.brand }}</div>
+                  <div class="item-name">{{ item.product.name }}</div>
+                  <div class="item-qty">Quantity: {{ item.quantity }}</div>
+                </div>
+                <div class="item-price">{{ formatPrice(item.product.price * item.quantity) }}</div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="tracking-sidebar">
+          <!-- Address -->
+          <div class="sidebar-card">
+            <h3 class="sidebar-title">Shipping Address</h3>
+            <div class="address-block">
+              <strong>{{ orderService.selectedOrder()!.shippingAddress.fullName }}</strong>
+              <p>{{ orderService.selectedOrder()!.shippingAddress.addressLine1 }}
+                @if (orderService.selectedOrder()!.shippingAddress.addressLine2) {
+                  , {{ orderService.selectedOrder()!.shippingAddress.addressLine2 }}
+                }
+              </p>
+              <p>{{ orderService.selectedOrder()!.shippingAddress.city }}, {{ orderService.selectedOrder()!.shippingAddress.state }} – {{ orderService.selectedOrder()!.shippingAddress.pincode }}</p>
+              <p class="addr-phone">📞 {{ orderService.selectedOrder()!.shippingAddress.phone }}</p>
+            </div>
+          </div>
+
+          <!-- Payment -->
+          <div class="sidebar-card">
+            <h3 class="sidebar-title">Payment</h3>
+            <p class="payment-method">{{ orderService.selectedOrder()!.paymentMethod }}</p>
+          </div>
+
+          <!-- Price Breakdown -->
+          <div class="sidebar-card">
+            <h3 class="sidebar-title">Price Details</h3>
+            <div class="price-rows">
+              <div class="price-row"><span>Subtotal</span><span>{{ formatPrice(orderService.selectedOrder()!.subtotal) }}</span></div>
+              <div class="price-row"><span>GST (18%)</span><span>{{ formatPrice(orderService.selectedOrder()!.tax) }}</span></div>
+              <div class="price-row"><span>Shipping</span>
+                <span>{{ orderService.selectedOrder()!.shipping === 0 ? 'FREE' : formatPrice(orderService.selectedOrder()!.shipping) }}</span>
+              </div>
+              <div class="price-divider"></div>
+              <div class="price-row total-row">
+                <span>Total Paid</span>
+                <span>{{ formatPrice(orderService.selectedOrder()!.total) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <a routerLink="/products" class="btn-continue-shopping">Continue Shopping</a>
+        </div>
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="not-found">
+    <div class="container">
+      <div class="empty-icon">🔍</div>
+      <h2>Order not found</h2>
+      <a routerLink="/orders" class="btn-back">View All Orders</a>
+    </div>
+  </div>
+}
